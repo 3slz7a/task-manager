@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>History</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<div class="header">
+  
+  <div style="display:flex; align-items:center; gap:15px;">
+
+    <!-- 🔙 BACK BUTTON -->
+    <button onclick="goBack()" class="back-btn">⬅</button>
+
+    <h1>Taskify</h1>
+
+  </div>
+
+  <div class="account">
+    <button class="account-btn">👤</button>
+
+    <div class="dropdown">
+      <a href="index.html">Dashboard</a>
+      <a href="login.html" onclick="logout()">Logout</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= HISTORY BOARD ================= -->
+<div class="board">
+
+  <div class="column" id="historyColumn">
+    <h2>History</h2>
+  </div>
+
+</div>
+
+<!-- ================= SCRIPTS ================= -->
+<script>
+
+// 🔐 check login
+const user = localStorage.getItem("user");
+
+if (!user) {
+  window.location.href = "login.html";
+}
+
+// 🔙 BACK
+function goBack() {
+  window.location.href = "index.html";
+}
+
+// 🔓 logout
+function logout() {
+  localStorage.removeItem("user");
+}
+
+// 🔥 load history
+async function loadHistory() {
+
+  const res = await fetch("api/history.php?user_id=" + user);
+  const data = await res.json();
+
+  const column = document.getElementById("historyColumn");
+  column.innerHTML = "<h2>History</h2>";
+
+  if (!data.length) {
+    column.innerHTML += "<p style='padding:10px'>No history yet</p>";
+    return;
+  }
+
+  data.forEach(task => {
+    const div = document.createElement("div");
+    div.className = "task";
+
+    div.innerHTML = `
+      <h3>${task.title}</h3>
+      <p>${task.due_date}</p>
+      <span class="priority ${task.priority}">${task.priority}</span>
+      <button onclick="restore(${task.task_id})">Restore</button>
+    `;
+
+    column.appendChild(div);
+  });
+}
+
+// 🔥 restore task
+async function restore(id) {
+
+  await fetch("api/restore.php", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ task_id: id })
+  });
+
+  loadHistory();
+}
+
+// 🔽 dropdown UI
+const account = document.querySelector(".account");
+const dropdown = document.querySelector(".dropdown");
+
+account.onclick = (e) => {
+  e.stopPropagation();
+  dropdown.style.display =
+    dropdown.style.display === "flex" ? "none" : "flex";
+};
+
+document.addEventListener("click", () => {
+  dropdown.style.display = "none";
+});
+
+// 🚀 start
+loadHistory();
+
+</script>
+
+</body>
+</html>

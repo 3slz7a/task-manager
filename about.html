@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About Team</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>About Project Team</h1>
+</div>
+
+<div class="history" id="teamContainer"></div>
+
+<script src="js/about.js"></script>
+<!-- ================= ADD MEMBER MODAL ================= -->
+<div id="addModal" class="modal hidden">
+  <div class="modal-box">
+
+    <h3>➕ Add Member</h3>
+
+    <input id="memberName" placeholder="Name">
+    <textarea id="memberBio" placeholder="Bio"></textarea>
+
+    <input type="file" id="memberImage">
+
+    <br><br>
+
+    <button id="saveMember" class="btn-danger">Save</button>
+    <button onclick="closeModal()" class="btn-cancel">Cancel</button>
+
+  </div>
+</div>
+</body>
+</html>
