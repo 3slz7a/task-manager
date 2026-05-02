@@ -12,7 +12,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 // ================= LOAD TEAM =================
 async function loadTeam() {
   try {
-    const res = await fetch("api/team.php");
+    const res = await fetch("https://taskify-mo.ct.ws/api/team.php");
     const data = await res.json();
 
     const container = document.getElementById("teamContainer");
