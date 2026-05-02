@@ -21,24 +21,36 @@
 <script>
 async function login() {
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  const res = await fetch("api/login.php", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ email, password })
-  });
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
 
-  const data = await res.json();
+  try {
 
-  console.log("LOGIN RESPONSE:", data);
+    const res = await fetch("https://taskify-mo.ct.ws/api/login.php", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ email, password })
+    });
 
-  if (data.status === "success") {
-    localStorage.setItem("user", data.user_id);
-    window.location.href = "index.html";
-  } else {
-    alert(data.message || "Wrong email or password");
+    const data = await res.json();
+
+    console.log("LOGIN RESPONSE:", data);
+
+    if (data.status === "success") {
+      localStorage.setItem("user", data.user_id);
+      window.location.href = "index.html";
+    } else {
+      alert(data.message || "Wrong email or password");
+    }
+
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    alert("Server error");
   }
 }
 </script>
