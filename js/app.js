@@ -18,41 +18,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initDelete();
   initUI();
   loadTasks();
-  loadUser(); // 🔥 تحميل صورة البروفايل
-
-  // ================= PROFILE IMAGE =================
-  const uploadInput = document.getElementById("uploadImage");
-
-  if (uploadInput) {
-    uploadInput.addEventListener("change", async () => {
-
-      const file = uploadInput.files[0];
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("user_id", userId);
-
-      try {
-        const res = await fetch("api/upload.php", {
-          method: "POST",
-          body: formData
-        });
-
-        const data = await res.json();
-        console.log("UPLOAD:", data);
-
-        if (data.status === "success") {
-          loadProfileImage(data.image);
-        } else {
-          alert("Upload failed");
-        }
-
-      } catch (err) {
-        console.error("UPLOAD ERROR:", err);
-      }
-    });
-  }
+  loadUser();
 
   if (!form) return;
 
@@ -65,7 +31,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const priority = document.getElementById("priority").value;
 
     try {
-      const res = await fetch("api/create.php", {
+      const res = await fetch("https://taskify-mo.ct.ws/api/create.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -89,30 +55,54 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// ================= LOAD PROFILE =================
-async function loadUser() {
-  try {
+// ================= PROFILE IMAGE =================
+const uploadInput = document.getElementById("uploadImage");
+
+if (uploadInput) {
+  uploadInput.addEventListener("change", async () => {
+
+    const file = uploadInput.files[0];
+    if (!file) return;
+
     const user = localStorage.getItem("user");
 
-    const res = await fetch("api/getUser.php?id=" + user);
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("user_id", user);
+
+    const res = await fetch("https://taskify-mo.ct.ws/api/upload.php", {
+      method: "POST",
+      body: formData
+    });
+
     const data = await res.json();
+    console.log("UPLOAD:", data);
 
-    if (data && data.image) {
+    if (data.status === "success") {
       loadProfileImage(data.image);
+    } else {
+      alert("Upload failed");
     }
+  });
+}
 
-  } catch (err) {
-    console.error("USER LOAD ERROR:", err);
+// ================= LOAD PROFILE =================
+async function loadUser() {
+  const user = localStorage.getItem("user");
+
+  const res = await fetch("https://taskify-mo.ct.ws/api/getUser.php?id=" + user);
+  const data = await res.json();
+
+  if (data && data.image) {
+    loadProfileImage(data.image);
   }
 }
 
 function loadProfileImage(image) {
   const btn = document.querySelector(".account-btn");
+  if (!btn) return;
 
-  btn.innerHTML = `
-    <img src="images/${image}" 
-         style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
-  `;
+  btn.innerHTML = `<img src="https://taskify-mo.ct.ws/images/${image}" style="width:100%;height:100%;border-radius:50%">`;
 }
 
 // ================= LOAD TASKS =================
@@ -120,7 +110,7 @@ async function loadTasks() {
   try {
     const userId = localStorage.getItem("user");
 
-    const res = await fetch("api/get.php?user_id=" + userId);
+    const res = await fetch("https://taskify-mo.ct.ws/api/get.php?user_id=" + userId);
     const tasks = await res.json();
 
     const todo = document.getElementById("todo");
@@ -132,6 +122,7 @@ async function loadTasks() {
     if (done) done.innerHTML = "<h2>Done</h2>";
 
     tasks.forEach(createTask);
+
     updateTicker(tasks);
 
   } catch (err) {
@@ -160,11 +151,13 @@ function createTask(task) {
     <button class="delete">Delete</button>
   `;
 
+  // 🔥 DELETE BUTTON
   div.querySelector(".delete").onclick = () => {
     deleteTargetId = task.id;
     document.getElementById("modal").classList.remove("hidden");
   };
 
+  // 🔥 DRAG
   div.addEventListener("dragstart", () => div.classList.add("dragging"));
   div.addEventListener("dragend", () => div.classList.remove("dragging"));
 
@@ -187,25 +180,30 @@ function initDelete() {
     const taskElement = document.querySelector(`[data-id="${deleteTargetId}"]`);
 
     if (taskElement) {
-      taskElement.style.transition = "0.3s";
+      taskElement.style.transition = "all 0.3s ease";
       taskElement.style.opacity = "0";
       taskElement.style.transform = "translateX(50px)";
     }
 
     try {
-      const res = await fetch("api/delete.php", {
+      const res = await fetch("https://taskify-mo.ct.ws/api/delete.php", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ id: deleteTargetId })
       });
 
       const data = await res.json();
+      console.log("DELETE:", data);
 
       if (data.status === "success") {
+
         setTimeout(() => {
           if (taskElement) taskElement.remove();
           loadTasks();
         }, 300);
+
       } else {
         alert("Delete failed");
       }
@@ -237,7 +235,7 @@ function initDragDrop() {
 
       col.appendChild(dragging);
 
-      await fetch("api/update.php", {
+      await fetch("https://taskify-mo.ct.ws/api/update.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
