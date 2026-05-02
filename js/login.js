@@ -1,54 +1,75 @@
-document.addEventListener("DOMContentLoaded", () => {
+// ================= LOGIN =================
+async function login() {
 
-  const form = document.getElementById("loginForm");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  try {
+    const res = await fetch("https://taskify-mo.ct.ws/api/login.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
 
-    try {
-      const res = await fetch("api/login.php", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      });
+    const data = await res.json();
+    console.log("LOGIN RESPONSE:", data);
 
-      const text = await res.text();
-      console.log("RAW:", text);
+    if (data.status === "success") {
+      localStorage.setItem("user", data.user_id);
 
-      let data;
+      // 🔥 redirect
+      window.location.href = "index.html";
 
-      try {
-        data = JSON.parse(text);
-      } catch {
-        alert("API مش بيرجع JSON");
-        return;
-      }
-
-      console.log("DATA:", data);
-
-      // 🔥 حتى لو الباك غلط، نخزن يدوي
-      if (data.user_id || data.id) {
-
-        const userId = data.user_id || data.id;
-
-        localStorage.setItem("user", userId);
-
-        console.log("FORCED SAVE:", localStorage.getItem("user"));
-
-        window.location.href = "index.html";
-
-      } else {
-        alert("Login failed: مفيش user_id راجع");
-      }
-
-    } catch (err) {
-      console.error(err);
+    } else {
+      alert(data.message || "Wrong email or password");
     }
-  });
 
-});
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    alert("Server error");
+  }
+}
+
+
+// ================= REGISTER =================
+async function register() {
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("Fill all fields");
+    return;
+  }
+
+  try {
+    const res = await fetch("https://taskify-mo.ct.ws/api/register.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    console.log("REGISTER:", data);
+
+    if (data.status === "success") {
+      alert("Account created successfully");
+      window.location.href = "login.html";
+    } else {
+      alert(data.message || "Register failed");
+    }
+
+  } catch (err) {
+    console.error("REGISTER ERROR:", err);
+    alert("Server error");
+  }
+}
